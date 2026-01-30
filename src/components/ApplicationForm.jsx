@@ -13,9 +13,16 @@ export default function ApplicationForm({
   onChange,
   onSubmit,
   onCancel,
+  generalError = "",
+  errors = {},
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-3">
+      {generalError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        {generalError}
+        </div>
+      )}
       <input
         name="company"
         value={form.company}
