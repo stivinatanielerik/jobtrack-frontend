@@ -57,7 +57,7 @@ function App() {
     const ok = confirm("Biztosan törlöd ezt a jelentkezést?");
     if (!ok) return;
 
-    const res = await fetch(`/api/applications/${id}`, {
+    const response = await fetch(`/api/applications/${id}`, {
       method: "DELETE",
       credentials: "include",
       headers: {
@@ -66,8 +66,8 @@ function App() {
       },
     });
 
-    if (!res.ok) {
-      alert(`Törlés sikertelen (HTTP ${res.status}).`);
+    if (!response.ok) {
+      alert(`Törlés sikertelen (HTTP ${response.status}).`);
       return;
     }
 
@@ -106,10 +106,10 @@ function App() {
 
     const contentType = response.headers.get("content-type") || "";
     const isJson = contentType.includes("application/json");
-    const payload = isJson ? await response.json() : await res.text();
+    const payload = isJson ? await response.json() : await response.text();
 
     if (!response.ok) {
-      console.log("HTTP", res.status, "payload:", payload);
+      console.log("HTTP", response.status, "payload:", payload);
       if (response.status === 422 && isJson) {
         setFieldErrors(payload.errors ?? {});
         setModalError("Kérlek töltsd ki a kötelező mezőket.");
@@ -133,11 +133,11 @@ function App() {
 
     try {
       const response = await fetch("/api/applications");
-      if (!response.ok) throw new Error(`HTTP ${res.status}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       setApplications(Array.isArray(data) ? data : []);
     } catch (e) {
-      setError("Nem sikerült betölteni a jelentkezéseket. Ellenőrizd, hogy fut-e a backend.");
+      setListError("Nem sikerült betölteni a jelentkezéseket. Ellenőrizd, hogy fut-e a backend.");
     } finally {
       setLoading(false);
     }
@@ -145,9 +145,13 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      const response = await fetch("/csrf-token", { credentials: "include" });
-      const data = await response.json();
-      setCsrfToken(data.token);
+      try {
+        const response = await fetch("/csrf-token", { credentials: "include" });
+        const data = await response.json();
+        setCsrfToken(data.token);
+      } catch {
+        setListError("Nem sikerült CSRF tokent kérni.");
+      }
     })();
     fetchApplications();
   }, []);
