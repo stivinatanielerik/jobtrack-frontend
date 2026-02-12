@@ -1,3 +1,5 @@
+import { getToken } from "../../auth/token";
+
 async function parseJsonOrText(response) {
   const ct = response.headers.get("content-type") || "";
   const isJson = ct.includes("application/json");
@@ -6,18 +8,28 @@ async function parseJsonOrText(response) {
 }
 
 export async function listApplications() {
-  const response = await fetch("/api/applications");
+  const token = getToken();
+
+  const response = await fetch("/api/applications", {
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
   const { payload } = await parseJsonOrText(response);
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return Array.isArray(payload) ? payload : [];
 }
 
 export async function createApplication(data) {
+  const token = getToken();
+
   const response = await fetch("/api/applications", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(data),
   });
@@ -27,11 +39,14 @@ export async function createApplication(data) {
 }
 
 export async function updateApplication(id, data) {
+  const token = getToken();
+
   const response = await fetch(`/api/applications/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(data),
   });
@@ -41,10 +56,13 @@ export async function updateApplication(id, data) {
 }
 
 export async function deleteApplication(id) {
+  const token = getToken();
+
   const response = await fetch(`/api/applications/${id}`, {
     method: "DELETE",
     headers: {
       Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
@@ -52,10 +70,13 @@ export async function deleteApplication(id) {
 }
 
 export async function deleteAllApplications() {
+  const token = getToken();
+
   const response = await fetch(`/api/applications`, {
     method: "DELETE",
     headers: {
       Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
